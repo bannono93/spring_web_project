@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
@@ -20,21 +21,21 @@ public class MemoReositoryTests {
     MemoRepository memoRepository;
 
     @Test
-    public void testClass(){
+    public void testClass() {
         System.out.println(memoRepository.getClass().getName());
     }
 
     @Test
-    public void testInsertDummies(){
-        IntStream.rangeClosed(1,100).forEach(i -> {
-            Memo memo = Memo.builder().memoText("Sample.."+i).build();
+    public void testInsertDummies() {
+        IntStream.rangeClosed(1, 100).forEach(i -> {
+            Memo memo = Memo.builder().memoText("Sample.." + i).build();
             memoRepository.save(memo);
         });
     }
 
     @Transactional
     @Test
-    public void testSelect(){
+    public void testSelect() {
 
         //데이터베이스에 존재하는 mno
         Long mno = 100L;
@@ -43,14 +44,14 @@ public class MemoReositoryTests {
 
         System.out.println("========================================");
 
-        if(result.isPresent()){
+        if (result.isPresent()) {
             Memo memo = result.get();
             System.out.println(memo);
         }
     }
 
     @Test
-    public void testUpdate(){
+    public void testUpdate() {
         //객체가 있는지 먼저 select 한 후, @Id를 가진 엔티티 객체가 있다면 update
         //그렇지 않으면 insert를 실행한다.
         Memo memo = Memo.builder().mno(100L).memoText("update Text").build();
@@ -59,7 +60,7 @@ public class MemoReositoryTests {
     }
 
     @Test
-    public void testDelete(){
+    public void testDelete() {
         Long mno = 103L;
         memoRepository.deleteById(mno);
         System.out.println("========================================");
@@ -67,11 +68,11 @@ public class MemoReositoryTests {
 
     //페이징 처리
     @Test
-    public void testPageDefault(){
+    public void testPageDefault() {
 
         //1페이지 ~ 10페이지
         //import 시에 org.springframework.data 관련 클래스들을 사용할것 (중요)
-        Pageable pageable = PageRequest.of(0,10);
+        Pageable pageable = PageRequest.of(0, 10);
 
         Page<Memo> result = memoRepository.findAll(pageable);
 
@@ -97,14 +98,14 @@ public class MemoReositoryTests {
 
         System.out.println("========================================");
 
-        for (Memo memo : result.getContent()){
+        for (Memo memo : result.getContent()) {
             System.out.println(memo);
         }
     }
 
     //정렬 처리
     @Test
-    public void testSort(){
+    public void testSort() {
 
         Sort sort1 = Sort.by("mno").descending();
 
@@ -112,7 +113,7 @@ public class MemoReositoryTests {
 
         Sort sortAll = sort1.and(sort2); //정렬 합치기
 
-        Pageable pageable = PageRequest.of(0,10,sortAll); // 합친 정렬 조건 사용
+        Pageable pageable = PageRequest.of(0, 10, sortAll); // 합친 정렬 조건 사용
 
         Page<Memo> result = memoRepository.findAll(pageable);
 
@@ -121,8 +122,20 @@ public class MemoReositoryTests {
         result.get().forEach(memo -> {
             System.out.println(memo);
         });
-
     }
 
+    //조회조건
+    @Test
+    public void testQueryMethods() {
 
+        //mno기준 70~80사이 조회
+        List<Memo> list = memoRepository.findByMnoBetweenOrderByMnoDesc(70L,80L);
+
+        //위 조건에 맞게 목록 출력
+        for(Memo memo : list){
+            System.out.println(memo);
+        }
+    }
+
+    //
 }
